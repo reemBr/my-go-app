@@ -1,0 +1,52 @@
+# My Go Web App
+
+## Overview
+
+This is a simple Go web application that serves a static HTML page displaying a "Hi" message. The application is Dockerized for easy deployment and consistency across different environments.
+
+## Prerequisites
+
+- Go (1.22 or higher) installed on your local machine (for building the application).
+- Docker installed on your local machine (for building and running the container).
+
+## Getting Started
+
+### Build and Run Locally
+
+1. **Build the Go Application**
+
+   To build the Go application locally, run:
+
+   ```bash
+   go build -o main .
+   ```
+
+2. **Run the Go Application**
+
+   Start the application with:
+
+   ```bash
+   ./main
+   ```
+
+   The application will be available at `http://localhost:8080/`.
+
+### Docker Setup
+
+1. **Build the Docker Image**
+
+   To build the Docker image, run:
+
+   ```bash
+   docker build -t my-go-app .
+   ```
+
+2. **Run the Docker Container**
+
+   To run the Docker container and map port 8080, use:
+
+   ```bash
+   docker run -p 8080:8080 my-go-app
+   ```
+
+   Access the application at `http://localhost:8080/`.

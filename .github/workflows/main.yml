@@ -1,0 +1,62 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'app/**'  
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.4'  # Ansible requires Python
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible requests 
+          
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+          
+          
+      - name: Install Ansible Collections
+        run: |
+          ls
+          ansible-galaxy collection install -r ./ansible/requirements.yml
+
+      - name: Get Git commit hash
+        id: git-commit
+        run: echo "GIT_COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+    
+          
+      - name: Build Docker image and update Kubernetes deployment
+        env:
+          GIT_COMMIT_HASH: ${{ env.GIT_COMMIT_HASH }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls
+          ansible-playbook ./ansible/build_and_deploy.yaml
+
+# you can also automate adding new tag to image by using github tokens  
+          # git add -A
+          # git commit -am "Automated push"
+          # git push

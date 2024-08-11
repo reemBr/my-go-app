@@ -1,0 +1,28 @@
+# ansible/build_and_deploy.yml
+- name: Build Docker image and update Kubernetes deployment
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Build Docker image with commit hash
+      docker_image:
+        name: "{{ lookup('env', 'DOCKER_REGISTRY') }}/my-go-app"
+        tag: "{{ lookup('env', 'GIT_COMMIT_HASH') }}"
+        source: build
+        build:
+          path: "../app"
+        state: present
+
+    - name: Push Docker image to registry
+      docker_image:
+        name: "{{ lookup('env', 'DOCKER_REGISTRY') }}/my-go-app"
+        tag: "{{ lookup('env', 'GIT_COMMIT_HASH') }}"
+        push: yes
+        source: local
+        state: present
+
+
+    - name: Update Kubernetes deployment with new image tag
+      replace:
+        path: "{{ playbook_dir }}/../k8s/deployment.yaml"
+        regexp: "{{ lookup('env', 'DOCKER_REGISTRY') }}/my-go-app:.*"
+        replace: "{{ lookup('env', 'DOCKER_REGISTRY') }}/my-go-app:{{ lookup('env', 'GIT_COMMIT_HASH') }}"
